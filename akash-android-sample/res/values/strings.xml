@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Akash Android Sample</string>
+    <string name="app_id">227706627265095</string>
+    <string name="app_info">A sample android app that integrates with facebook to perform specific tasks</string>
+    <string name="login_msg">Login with Facebook to begin</string>
+    <string name="logged_in_msg">Welcome, you are now logged in.</string>
+    <string name="settings">Settings</string>
+    <string name="user_name">Profile Name</string>
+    <string name="user_location">Location</string>
+    <string name="user_education">Education</string>
+
+</resources>
