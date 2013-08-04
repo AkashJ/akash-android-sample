@@ -111,12 +111,14 @@ public class LoggedInFragment extends BaseFragment {
                                 if (user.getLocation() != null) {
                                     userLocationView.setText(user.getLocation().getProperty("name").toString());
                                 } else {
-                                    userLocationView.setText("");
+                                    userLocationView.setText("Location not available.");
                                 }
                                 try {
                                     JSONArray education = user.getInnerJSONObject().getJSONArray("education");
                                     if (education != null && education.length() > 0) {
-                                        userEducationView.setText(education.getJSONObject(0).getJSONObject("school").getString("name"));
+                                        userEducationView.setText(education.getJSONObject(education.length()-1).getJSONObject("school").getString("name"));
+                                    } else {
+                                        userEducationView.setText("Education not available.");
                                     }
                                 } catch (JSONException e) {
                                     Log.e("LoggedIn", e.getMessage());

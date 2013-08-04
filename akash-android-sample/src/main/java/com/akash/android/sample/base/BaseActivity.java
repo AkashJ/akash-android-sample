@@ -2,6 +2,6 @@ package com.akash.android.sample.base;
 
 import roboguice.activity.RoboFragmentActivity;
 
-public class BaseActivity extends RoboFragmentActivity {
+public abstract class BaseActivity extends RoboFragmentActivity {
 
 }

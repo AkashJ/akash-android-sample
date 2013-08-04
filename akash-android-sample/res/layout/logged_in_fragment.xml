@@ -1,27 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:facebook="http://schemas.android.com/apk/res-auto"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
-    <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:gravity="center_horizontal"
-            android:orientation="vertical">
-
+<ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:facebook="http://schemas.android.com/apk/res-auto"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:background="@color/com_facebook_blue">
+    <LinearLayout android:layout_width="fill_parent"
+                  android:layout_height="wrap_content"
+                  android:gravity="center_horizontal"
+                  android:orientation="vertical"
+                  android:paddingLeft="10dp"
+                  android:paddingRight="10dp">
+        <TextView
+                android:id="@+id/task_header"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="15dp"
+                android:text="@string/logged_in_msg"
+                style="@style/H1_light"/>
         <RelativeLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
-                android:layout_marginRight="15dp"
-                android:background="@color/sea_blue">
+                android:layout_marginTop="15dp"
+                android:padding="2dp"
+                android:background="@drawable/user_border">
             <com.facebook.widget.ProfilePictureView
                     android:id="@+id/user_pic"
                     android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
                     android:layout_alignParentLeft="true"
+                    android:layout_centerVertical="true"
                     facebook:preset_size="normal"/>
             <TextView
                     android:id="@+id/user_name"
@@ -31,6 +40,7 @@
                     android:layout_marginTop="5dp"
                     android:layout_toRightOf="@+id/user_pic"
                     android:text="@string/user_name"
+                    android:singleLine="true"
                     style="@style/H1"/>
             <TextView
                     android:id="@+id/user_location"
@@ -41,6 +51,7 @@
                     android:layout_toRightOf="@+id/user_pic"
                     android:layout_below="@+id/user_name"
                     android:text="@string/user_location"
+                    android:singleLine="true"
                     style="@style/H2"/>
             <TextView
                     android:id="@+id/user_education"
@@ -51,8 +62,41 @@
                     android:layout_toRightOf="@+id/user_pic"
                     android:layout_below="@+id/user_location"
                     android:text="@string/user_education"
+                    android:singleLine="true"
                     style="@style/H3"/>
         </RelativeLayout>
-    </LinearLayout>
+        <TextView
+                android:id="@+id/task_header"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="25dp"
+                android:text="@string/task_header"
+                style="@style/H1_light"/>
 
-</LinearLayout>
+        <LinearLayout android:layout_width="fill_parent"
+                      android:layout_height="wrap_content"
+                      android:gravity="center_horizontal"
+                      android:orientation="vertical"
+                      android:paddingLeft="10dp"
+                      android:paddingRight="10dp"
+                      android:layout_marginTop="15dp">
+        <Button android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:padding="15dp"
+                android:layout_marginTop="15dp"
+                android:background="@drawable/curvy_rectangular_button"
+                android:textColor="@color/darkgray"
+                android:text="@string/view_friends_button">
+        </Button>
+        <Button android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:padding="15dp"
+                android:layout_marginTop="15dp"
+                android:background="@drawable/curvy_rectangular_button"
+                android:textColor="@color/darkgray"
+                android:text="@string/view_pictures_from_feed_button">
+        </Button>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
