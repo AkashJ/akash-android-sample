@@ -6,12 +6,13 @@ import com.akash.android.sample.*;
 
 public class HomeActivityTest extends ActivityInstrumentationTestCase2<HomeActivity> {
 
+    HomeActivity homeActivity;
+    Fragment[] fragments;
+
     public HomeActivityTest() {
         super(HomeActivity.class);
     }
 
-    HomeActivity homeActivity;
-    Fragment[] fragments;
 
     @Override
     protected void setUp() throws Exception {

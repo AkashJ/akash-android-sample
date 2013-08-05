@@ -16,7 +16,7 @@
 
     <properties>
         <platform.version>4.1.1.4</platform.version>
-        <support.version>18</support.version>
+        <support.version>r18</support.version>
         <android.plugin.version>3.6.1</android.plugin.version>
     </properties>
 
@@ -35,8 +35,8 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>android.support</groupId>
-                <artifactId>compatibility-v4</artifactId>
+                <groupId>com.google.android</groupId>
+                <artifactId>support-v4</artifactId>
                 <version>${support.version}</version>
             </dependency>
             <dependency>
@@ -59,7 +59,9 @@
                         <sdk>
                             <platform>15</platform>
                         </sdk>
+                        <undeployBeforeDeploy>true</undeployBeforeDeploy>
                     </configuration>
+                    <extensions>true</extensions>
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
