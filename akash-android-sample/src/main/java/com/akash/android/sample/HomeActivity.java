@@ -121,6 +121,10 @@ public class HomeActivity extends BaseActivity implements FragmentInterface{
         }
     }
 
+    public Fragment[] getFragments(){
+        return this.fragments;
+    }
+
     @Override
     public void performActionOnActivity(){
         //if we need to communicate from fragment to activity
