@@ -61,13 +61,13 @@ public class LoggedInFragment extends BaseFragment {
     }
 
     private void makeMeRequest(final Session session) {
-        Request request = Request.newMeRequest(session,
+        Request meRequest = Request.newMeRequest(session,
                 new Request.GraphUserCallback() {
                     @Override
                     public void onCompleted(GraphUser user, Response response) {
                         if (session == Session.getActiveSession()) {
                             if (user != null) {
-                                //Save the user details
+                                //Save the user details in application
                                 application.setUser(user);
 
                                 //Set the user details
@@ -96,6 +96,6 @@ public class LoggedInFragment extends BaseFragment {
                         }
                     }
                 });
-        request.executeAsync();
+        meRequest.executeAsync();
     }
 }

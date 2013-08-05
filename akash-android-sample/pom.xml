@@ -40,6 +40,11 @@
             <version>3.0b-experimental</version>
         </dependency>
         <dependency>
+            <groupId>com.nostra13.universalimageloader</groupId>
+            <artifactId>universal-image-loader</artifactId>
+            <version>1.8.6</version>
+        </dependency>
+        <dependency>
             <groupId>com.github.avianey</groupId>
             <artifactId>facebook-android-api</artifactId>
             <version>3.0.1</version>

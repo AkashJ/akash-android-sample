@@ -14,5 +14,7 @@
     <string name="view_friends_button">View Friends</string>
     <string name="view_pictures_from_feed_button">View Pictures</string>
     <string name="view_places_button">Check In</string>
+    <string name="base_row_view">picture</string>
+    <string name="under_construction">Under Construction</string>
 
 </resources>
