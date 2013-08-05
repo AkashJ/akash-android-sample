@@ -6,6 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import com.akash.android.sample.R;
 import com.akash.android.sample.base.BaseFragment;
+import com.facebook.Session;
+import com.facebook.SessionState;
 
 public class LoggedOutFragment extends BaseFragment {
 
@@ -16,4 +18,8 @@ public class LoggedOutFragment extends BaseFragment {
         return inflater.inflate(R.layout.logged_out_frag, container, false);
     }
 
+    @Override
+    protected void onSessionStateChange(Session session, SessionState state, Exception exception) {
+        //No need to do anything
+    }
 }

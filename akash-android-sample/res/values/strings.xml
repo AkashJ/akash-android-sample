@@ -13,5 +13,6 @@
     <string name="task_header">What would you like to do?</string>
     <string name="view_friends_button">View Friends</string>
     <string name="view_pictures_from_feed_button">View Pictures</string>
+    <string name="view_places_button">Check In</string>
 
 </resources>

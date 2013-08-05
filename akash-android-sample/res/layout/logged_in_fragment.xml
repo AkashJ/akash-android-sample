@@ -66,7 +66,7 @@
                     style="@style/H3"/>
         </RelativeLayout>
         <TextView
-                android:id="@+id/task_header"
+                android:id="@+id/task_button_list_header"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
@@ -87,7 +87,8 @@
                 android:layout_marginTop="15dp"
                 android:background="@drawable/curvy_rectangular_button"
                 android:textColor="@color/darkgray"
-                android:text="@string/view_friends_button">
+                android:text="@string/view_friends_button"
+                android:onClick="onSelectViewFriends">
         </Button>
         <Button android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -95,7 +96,17 @@
                 android:layout_marginTop="15dp"
                 android:background="@drawable/curvy_rectangular_button"
                 android:textColor="@color/darkgray"
-                android:text="@string/view_pictures_from_feed_button">
+                android:text="@string/view_places_button"
+                android:onClick="onSelectCheckIn">
+        </Button>
+        <Button android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:padding="15dp"
+                android:layout_marginTop="15dp"
+                android:background="@drawable/curvy_rectangular_button"
+                android:textColor="@color/darkgray"
+                android:text="@string/view_pictures_from_feed_button"
+                android:onClick="onSelectViewPictures">
         </Button>
         </LinearLayout>
     </LinearLayout>

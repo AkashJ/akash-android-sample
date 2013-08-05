@@ -17,4 +17,16 @@
               android:id="@+id/userSettingsFragment"
               android:layout_width="match_parent"
               android:layout_height="match_parent" />
+    <fragment android:name="com.akash.android.sample.fragments.ViewFriendsFragment"
+              android:id="@+id/viewFriendsFrag"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent" />
+    <fragment android:name="com.akash.android.sample.fragments.CheckInFragment"
+              android:id="@+id/checkInFrag"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent" />
+    <fragment android:name="com.akash.android.sample.fragments.ViewPicturesFragment"
+              android:id="@+id/viewPicturesFrag"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent" />
 </LinearLayout>

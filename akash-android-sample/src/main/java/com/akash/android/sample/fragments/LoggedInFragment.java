@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import com.akash.android.sample.R;
 import com.akash.android.sample.base.BaseFragment;
+import com.akash.android.sample.util.FragmentsUtility;
 import com.facebook.*;
 import com.facebook.model.GraphUser;
 import com.facebook.widget.ProfilePictureView;
@@ -18,41 +19,18 @@ import roboguice.inject.InjectView;
 
 public class LoggedInFragment extends BaseFragment {
 
-    @InjectView(R.id.user_pic)
-    private ProfilePictureView profilePictureView;
-
-    @InjectView(R.id.user_name)
-    private TextView userNameView;
-
-    @InjectView(R.id.user_location)
-    private TextView userLocationView;
-
-    @InjectView(R.id.user_education)
-    private TextView userEducationView;
+    @InjectView(R.id.user_pic)          private ProfilePictureView profilePictureView;
+    @InjectView(R.id.user_name)         private TextView userNameView;
+    @InjectView(R.id.user_location)     private TextView userLocationView;
+    @InjectView(R.id.user_education)    private TextView userEducationView;
 
     private static final String TAG = "LoggedInFragment";
     private static final int REAUTH_ACTIVITY_CODE = 100;
-    private UiLifecycleHelper uiHelper;
-    private Session.StatusCallback callback = new Session.StatusCallback() {
-        @Override
-        public void call(final Session session, final SessionState state, final Exception exception) {
-            onSessionStateChange(session, state, exception);
-        }
-    };
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        uiHelper = new UiLifecycleHelper(getActivity(), callback);
-        uiHelper.onCreate(savedInstanceState);
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.logged_in_fragment, container, false);
-        profilePictureView = (ProfilePictureView) view.findViewById(R.id.user_pic);
-        profilePictureView.setCropped(true);
         Session session = Session.getActiveSession();
         if (session != null && session.isOpened()) {
             makeMeRequest(session);
@@ -61,27 +39,9 @@ public class LoggedInFragment extends BaseFragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        uiHelper.onResume();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle bundle) {
-        super.onSaveInstanceState(bundle);
-        uiHelper.onSaveInstanceState(bundle);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        uiHelper.onPause();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        uiHelper.onDestroy();
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        profilePictureView.setCropped(true);
     }
 
     @Override
@@ -92,7 +52,8 @@ public class LoggedInFragment extends BaseFragment {
         }
     }
 
-    private void onSessionStateChange(final Session session, SessionState state, Exception exception) {
+    @Override
+    protected void onSessionStateChange(final Session session, SessionState state, Exception exception) {
         if (session != null && session.isOpened()) {
             // Get the user's data.
             makeMeRequest(session);
@@ -106,6 +67,10 @@ public class LoggedInFragment extends BaseFragment {
                     public void onCompleted(GraphUser user, Response response) {
                         if (session == Session.getActiveSession()) {
                             if (user != null) {
+                                //Save the user details
+                                application.setUser(user);
+
+                                //Set the user details
                                 profilePictureView.setProfileId(user.getId());
                                 userNameView.setText(user.getName());
                                 if (user.getLocation() != null) {
@@ -116,7 +81,7 @@ public class LoggedInFragment extends BaseFragment {
                                 try {
                                     JSONArray education = user.getInnerJSONObject().getJSONArray("education");
                                     if (education != null && education.length() > 0) {
-                                        userEducationView.setText(education.getJSONObject(education.length()-1).getJSONObject("school").getString("name"));
+                                        userEducationView.setText(education.getJSONObject(education.length() - 1).getJSONObject("school").getString("name"));
                                     } else {
                                         userEducationView.setText("Education not available.");
                                     }
