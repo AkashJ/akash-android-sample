@@ -16,5 +16,7 @@
     <string name="view_places_button">Check In</string>
     <string name="base_row_view">picture</string>
     <string name="under_construction">Under Construction</string>
+    <string name="progress_dialog">Loading…</string>
+    <string name="ok_text">OK</string>
 
 </resources>

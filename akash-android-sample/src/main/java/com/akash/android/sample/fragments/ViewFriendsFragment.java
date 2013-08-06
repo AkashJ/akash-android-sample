@@ -1,7 +1,9 @@
 package com.akash.android.sample.fragments;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -96,13 +98,13 @@ public class ViewFriendsFragment extends BaseFragment {
                                         String location = friend.getLocation() != null ? friend.getLocation().getProperty("name").toString() : "";
                                         String url = (String) pictureData.get("url");
                                         url = "http"+url.split("https")[1];
-                                        friendRows.add(new PeopleListElement(activity.getApplicationContext(), url, friend.getName(), location));
+                                        friendRows.add(new PeopleListElement(activity.getApplicationContext(), url, friend.getName(), location, friend));
                                     } catch (JSONException e) {
                                         Log.e("LoggedIn", e.getMessage());
                                     }
                                 }
                             }else {
-                                friendRows.add(new PeopleListElement(activity.getApplicationContext(), null, "No Friends Found", ""));
+                                friendRows.add(new PeopleListElement(activity.getApplicationContext(), null, "No Friends Found", "", null));
                             }
                         }
                         if (response.getError() != null) {
@@ -120,11 +122,11 @@ public class ViewFriendsFragment extends BaseFragment {
     private class PeopleListElement extends BaseRowView {
 
         public PeopleListElement(final Context context) {
-            super(context, null, "Loading", "");
+            super(context, null, "Loading", "", null);
         }
 
-        public PeopleListElement(final Context context, String url, String name, String location) {
-            super(context, url, name, location);
+        public PeopleListElement(final Context context, String url, String name, String location, GraphUser user) {
+            super(context, url, name, location, user);
         }
 
         @Override
@@ -132,7 +134,16 @@ public class ViewFriendsFragment extends BaseFragment {
             return new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // Do nothing
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setCancelable(false);
+                    builder.setTitle("Friend Details View");
+                    builder.setMessage("functionality under construction");
+                    builder.setPositiveButton(getActivity().getString(R.string.ok_text), new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+                    builder.show();
                 }
             };
         }
