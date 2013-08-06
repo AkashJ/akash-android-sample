@@ -1,16 +1,13 @@
 package com.akash.android.sample.base;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.view.View;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.akash.android.sample.R;
-import com.facebook.android.Facebook;
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 
 public abstract class BaseRowView extends RelativeLayout{
 

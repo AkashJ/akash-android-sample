@@ -77,17 +77,18 @@ public class ViewFriendsFragment extends BaseFragment {
     }
 
     private void getFriends(final Session session) {
+        final Activity activity = getActivity();
         Request friendRequest = Request.newMyFriendsRequest(session,
                 new Request.GraphUserListCallback() {
                     @Override
                     public void onCompleted(List<GraphUser> friends, Response response) {
-                        if (session == Session.getActiveSession()) {
+                        if (session == Session.getActiveSession() && activity != null && !activity.isFinishing() && !activity.isChangingConfigurations()) {
+                            friendRows.clear();
                             if (friends != null && friends.size() > 0) {
                                 //save the friends in application
                                 application.setSelectedFriends(friends);
 
                                 //Set the friends list
-                                friendRows.clear();
                                 for (GraphUser friend : friends) {
                                     try {
                                         Map<String, Object> map = friend.asMap();
@@ -95,11 +96,13 @@ public class ViewFriendsFragment extends BaseFragment {
                                         String location = friend.getLocation() != null ? friend.getLocation().getProperty("name").toString() : "";
                                         String url = (String) pictureData.get("url");
                                         url = "http"+url.split("https")[1];
-                                        friendRows.add(new PeopleListElement(getActivity().getApplicationContext(), url, friend.getName(), location));
+                                        friendRows.add(new PeopleListElement(activity.getApplicationContext(), url, friend.getName(), location));
                                     } catch (JSONException e) {
                                         Log.e("LoggedIn", e.getMessage());
                                     }
                                 }
+                            }else {
+                                friendRows.add(new PeopleListElement(activity.getApplicationContext(), null, "No Friends Found", ""));
                             }
                         }
                         if (response.getError() != null) {
@@ -138,12 +141,12 @@ public class ViewFriendsFragment extends BaseFragment {
     private class ActionListAdapter extends ArrayAdapter<PeopleListElement> {
         private List<PeopleListElement> listElements;
 
-        public ActionListAdapter(Context context, int resourceId, List<PeopleListElement> baseRowViews) {
-            super(context, resourceId, baseRowViews);
-            this.listElements = baseRowViews;
+        public ActionListAdapter(Context context, int resourceId, List<PeopleListElement> peopleListElements) {
+            super(context, resourceId, peopleListElements);
+            this.listElements = peopleListElements;
             // Set up as an observer for list item changes to
             // refresh the view.
-            for (BaseRowView listElement : baseRowViews) {
+            for (PeopleListElement listElement : peopleListElements) {
                 listElement.setAdapter(this);
             }
         }
