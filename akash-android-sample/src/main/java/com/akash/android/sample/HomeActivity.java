@@ -1,5 +1,6 @@
 package com.akash.android.sample;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -19,6 +20,8 @@ public class HomeActivity extends BaseActivity implements FragmentInterface{
     @Inject FragmentManager fm;
     private Fragment[] fragments = new Fragment[FragmentsUtility.FRAGMENT_COUNT];
     private MenuItem settings;
+    private int currentActiveFragmentIndex = 0;
+    public static final String PREF = "HomePref";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -35,6 +38,19 @@ public class HomeActivity extends BaseActivity implements FragmentInterface{
             transaction.hide(fragment);
         }
         transaction.commit();
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if(savedInstanceState.containsKey("currentActiveFragment")){
+            //Take the last active fragment index from saved instance bundle
+            this.currentActiveFragmentIndex = savedInstanceState.getInt("currentActiveFragment");
+        }else {
+            //If saved instance state null then take the last active fragment index from shared preferences
+            SharedPreferences settings = getSharedPreferences(PREF, 0);
+            this.currentActiveFragmentIndex = settings.getInt("currentActiveFragment", FragmentsUtility.LOGGED_IN);
+        }
     }
 
     @Override
@@ -66,10 +82,23 @@ public class HomeActivity extends BaseActivity implements FragmentInterface{
         super.onResumeFragments();
         Session session = Session.getActiveSession();
         if (session != null && session.isOpened()) {
-            showFragment(FragmentsUtility.LOGGED_IN, false);
+            showFragment(this.currentActiveFragmentIndex, false);
         } else {
             showFragment(FragmentsUtility.LOGGED_OUT, false);
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        //Add current active fragment index to restore bundle
+        outState.putInt("currentActiveFragment", this.currentActiveFragmentIndex);
+        //Add the current active fragment index to shared preferences
+        SharedPreferences settings = getSharedPreferences(PREF, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putInt("currentActiveFragment", this.currentActiveFragmentIndex);
+        // Commit the edits!
+        editor.commit();
     }
 
     @Override
@@ -113,6 +142,7 @@ public class HomeActivity extends BaseActivity implements FragmentInterface{
         }
         transaction.commit();
         supportInvalidateOptionsMenu();
+        this.currentActiveFragmentIndex = fragmentIndex;
     }
 
     public void switchFragment(int fragmentIndex) {
