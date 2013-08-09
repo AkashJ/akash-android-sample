@@ -10,7 +10,7 @@ import com.akash.android.sample.R;
 import com.facebook.model.GraphObject;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
-public abstract class BaseRowView extends RelativeLayout{
+public abstract class BaseRowView extends RelativeLayout {
 
     private ImageView picture;
     private TextView name;

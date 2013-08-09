@@ -57,10 +57,29 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
         return view;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        TextView header = new TextView(getActivity());
+        header.setText("Places NearBy");
+        int paddingPixel = 5;
+        float density = getActivity().getResources().getDisplayMetrics().density;
+        int paddingDp = (int)(paddingPixel * density);
+        header.setPadding(paddingDp,paddingDp,paddingDp,paddingDp);
+        header.setTextAppearance(getActivity(), R.style.H1_light);
+        checkInListView.addHeaderView(header);
         checkInListView.setAdapter(new CustomListAdapter(getActivity(), R.id.friends_list_view, placeRows));
+        Session session = Session.getActiveSession();
+        if (session != null && session.isOpened()) {
+            if(savedInstanceState != null && savedInstanceState.containsKey("friends")){
+                placeRows.clear();
+                List<PlaceListElement> savedFriends = (List<PlaceListElement>) savedInstanceState.getSerializable("friends");
+                for(PlaceListElement itr: savedFriends){
+                    placeRows.add(itr);
+                }
+            }
+        }
     }
 
     @Override
@@ -86,6 +105,13 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
     public void onResume() {
         super.onResume();
         locationManager.requestLocationUpdates(provider, MIN_TIME, MIN_DISTANCE, this);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        //Add current friends data to bundle
+        outState.putSerializable("friends", (ArrayList) placeRows);
     }
 
     @Override
@@ -147,8 +173,6 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
                                 placeRows.add(new PlaceListElement(activity.getApplicationContext(), null, "No Places Found", "", null));
                                 requestStarted = false;
                             }
-
-
                         }
                     }
                 });

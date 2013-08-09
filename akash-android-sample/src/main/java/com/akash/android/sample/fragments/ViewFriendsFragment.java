@@ -43,17 +43,41 @@ public class ViewFriendsFragment extends BaseFragment {
         View view = inflater.inflate(R.layout.view_friends_fragment, container, false);
         friendRows = new ArrayList<PeopleListElement>();
         friendRows.add(new PeopleListElement(getActivity().getApplicationContext()));
-        Session session = Session.getActiveSession();
-        if (session != null && session.isOpened()) {
-            getFriends(session);
-        }
         return view;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        TextView header = new TextView(getActivity());
+        header.setText("Friends List");
+        int paddingPixel = 5;
+        float density = getActivity().getResources().getDisplayMetrics().density;
+        int paddingDp = (int)(paddingPixel * density);
+        header.setPadding(paddingDp,paddingDp,paddingDp,paddingDp);
+        header.setTextAppearance(getActivity(), R.style.H1_light);
+        friendListView.addHeaderView(header);
         friendListView.setAdapter(new ActionListAdapter(getActivity(), R.id.friends_list_view, friendRows));
+        Session session = Session.getActiveSession();
+        if (session != null && session.isOpened()) {
+            if(savedInstanceState != null && savedInstanceState.containsKey("friends")){
+                friendRows.clear();
+                List<PeopleListElement> savedFriends = (List<PeopleListElement>) savedInstanceState.getSerializable("friends");
+                for(PeopleListElement itr: savedFriends){
+                    friendRows.add(itr);
+                }
+            }else {
+                getFriends(session);
+            }
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        //Add current friends data to bundle
+        outState.putSerializable("friends", (ArrayList) friendRows);
     }
 
     @Override
