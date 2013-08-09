@@ -27,6 +27,12 @@ public class HomeActivity extends BaseActivity implements FragmentInterface{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home);
+        fm.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+
+            }
+        });
         fragments[FragmentsUtility.LOGGED_OUT] = fm.findFragmentById(R.id.loggedOutFrag);
         fragments[FragmentsUtility.LOGGED_IN] = fm.findFragmentById(R.id.loggedInFrag);
         fragments[FragmentsUtility.SETTINGS] = fm.findFragmentById(R.id.userSettingsFragment);
@@ -116,6 +122,14 @@ public class HomeActivity extends BaseActivity implements FragmentInterface{
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        //Implement custom back logic
+        if(currentActiveFragmentIndex > FragmentsUtility.LOGGED_IN){
+            showFragment(FragmentsUtility.LOGGED_IN, false);
+        }
+    }
+
     public  void onSelectViewFriends(final View v) {
         switchFragment(FragmentsUtility.FRIENDS);
     }
@@ -153,11 +167,6 @@ public class HomeActivity extends BaseActivity implements FragmentInterface{
 
     public Fragment[] getFragments(){
         return this.fragments;
-    }
-
-    @Override
-    public void performActionOnActivity(){
-        //if we need to communicate from fragment to activity
     }
 }
 
