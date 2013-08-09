@@ -1,5 +1,4 @@
 # built application files
-*.apk
 *.ap_
 
 # files for the dex VM
@@ -15,6 +14,14 @@ gen/
 # Local configuration file (sdk path, etc)
 local.properties
 
-# Eclipse project files
+# IntellijIDea/Eclipse project files
 .classpath
 .project
+.idea
+*.iml
+*.ipr
+
+# external generated dependencies and target compiled files
+
+akash-android-sample/gen-external-apklibs/
+akash-android-sample-it/gen-external-apklibs/

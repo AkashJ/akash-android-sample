@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+    <fragment android:name="com.akash.android.sample.fragments.LoggedInFragment"
+              android:id="@+id/loggedInFrag"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent" />
+    <fragment android:name="com.akash.android.sample.fragments.LoggedOutFragment"
+              android:id="@+id/loggedOutFrag"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent" />
+    <fragment android:name="com.facebook.widget.UserSettingsFragment"
+              android:id="@+id/userSettingsFragment"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent" />
+    <fragment android:name="com.akash.android.sample.fragments.ViewFriendsFragment"
+              android:id="@+id/viewFriendsFrag"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent" />
+    <fragment android:name="com.akash.android.sample.fragments.CheckInFragment"
+              android:id="@+id/checkInFrag"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent" />
+    <fragment android:name="com.akash.android.sample.fragments.ViewPicturesFragment"
+              android:id="@+id/viewPicturesFrag"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent" />
+</LinearLayout>
