@@ -12,9 +12,11 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 public abstract class BaseRowView extends RelativeLayout {
 
     private ImageView picture;
+    private String imageUrl;
     private TextView name;
     private TextView location;
     private BaseAdapter adapter;
+    protected static ImageLoader imageLoader = ImageLoader.getInstance();
 
     public BaseRowView(final Context context, String url, String name, String location) {
         super(context);
@@ -22,9 +24,7 @@ public abstract class BaseRowView extends RelativeLayout {
         this.picture = (ImageView) findViewById(R.id.image);
         this.name = (TextView) findViewById(R.id.name);
         this.location = (TextView) findViewById(R.id.location);
-
-        ImageLoader imageLoader = ImageLoader.getInstance();
-
+        this.imageUrl = url;
         imageLoader.displayImage(url, this.picture);
         this.name.setText(name);
         this.location.setText(location);
@@ -65,5 +65,13 @@ public abstract class BaseRowView extends RelativeLayout {
             adapter.notifyDataSetChanged();
         }
         this.location.setText(location);
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

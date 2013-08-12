@@ -22,6 +22,7 @@ import com.akash.android.sample.base.BaseRowView;
 import com.akash.android.sample.base.FragmentInterface;
 import com.facebook.*;
 import com.facebook.model.GraphPlace;
+import com.nostra13.universalimageloader.core.ImageLoader;
 import org.json.JSONException;
 import org.json.JSONObject;
 import roboguice.inject.InjectView;
@@ -285,6 +286,7 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
 
     private class PlaceListAdapter extends ArrayAdapter<PlaceListElement> {
         private List<PlaceListElement> listElements;
+        protected ImageLoader imageLoader = ImageLoader.getInstance();
 
         public PlaceListAdapter(Context context, int resourceId, List<PlaceListElement> placeListElements) {
             super(context, resourceId, placeListElements);
@@ -311,7 +313,14 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
                 TextView name = (TextView) view.findViewById(R.id.name);
                 TextView location = (TextView) view.findViewById(R.id.location);
                 if (image != null) {
-                    image = placeListElement.getPicture();
+                    imageLoader.displayImage("", image);
+                    if (placeListElement.getImageUrl() != null && placeListElement.getImageUrl().length() > 0) {
+                        imageLoader.displayImage(placeListElement.getImageUrl(), image);
+                        image.setVisibility(View.VISIBLE);
+                    } else {
+                        image.setVisibility(View.GONE);
+                        image.invalidate();
+                    }
                 }
                 if (name != null) {
                     name.setText(placeListElement.getName());

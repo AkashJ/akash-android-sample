@@ -18,6 +18,7 @@ import com.akash.android.sample.base.BaseRowView;
 import com.akash.android.sample.base.FragmentInterface;
 import com.facebook.*;
 import com.facebook.model.GraphUser;
+import com.nostra13.universalimageloader.core.ImageLoader;
 import org.json.JSONException;
 import org.json.JSONObject;
 import roboguice.inject.InjectView;
@@ -205,6 +206,7 @@ public class ViewFriendsFragment extends BaseFragment {
 
     private class FriendsListAdapter extends ArrayAdapter<PeopleListElement> {
         private List<PeopleListElement> listElements;
+        protected ImageLoader imageLoader = ImageLoader.getInstance();
 
         public FriendsListAdapter(Context context, int resourceId, List<PeopleListElement> peopleListElements) {
             super(context, resourceId, peopleListElements);
@@ -231,7 +233,14 @@ public class ViewFriendsFragment extends BaseFragment {
                 TextView name = (TextView) view.findViewById(R.id.name);
                 TextView location = (TextView) view.findViewById(R.id.location);
                 if (image != null) {
-                    image = peopleListElement.getPicture();
+                    imageLoader.displayImage("", image);
+                    if (peopleListElement.getImageUrl() != null && peopleListElement.getImageUrl().length() > 0) {
+                        imageLoader.displayImage(peopleListElement.getImageUrl(), image);
+                        image.setVisibility(View.VISIBLE);
+                    } else {
+                        image.setVisibility(View.GONE);
+                        image.invalidate();
+                    }
                 }
                 if (name != null) {
                     name.setText(peopleListElement.getName());

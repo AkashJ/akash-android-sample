@@ -4,10 +4,14 @@ import android.app.Application;
 import com.facebook.model.GraphPlace;
 import com.facebook.model.GraphUser;
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
+import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
+import com.nostra13.universalimageloader.utils.StorageUtils;
 
+import java.io.File;
 import java.util.List;
 
 public class AkashAndroidSampleApplication extends Application {
@@ -22,10 +26,10 @@ public class AkashAndroidSampleApplication extends Application {
         // Create global configuration and initialize ImageLoader with this configuration
         ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(getApplicationContext())
                 .threadPriority(Thread.NORM_PRIORITY - 2)
-                .denyCacheImageMultipleSizesInMemory()
-                .discCacheFileNameGenerator(new Md5FileNameGenerator())
+                .memoryCacheSize(20 * 1024 * 1024) // 20 Mb
+                .memoryCache(new LruMemoryCache(20 * 1024 * 1024))
+                .defaultDisplayImageOptions(DisplayImageOptions.createSimple())
                 .tasksProcessingOrder(QueueProcessingType.LIFO)
-                .writeDebugLogs()
                 .build();
         ImageLoader.getInstance().init(config);
     }
