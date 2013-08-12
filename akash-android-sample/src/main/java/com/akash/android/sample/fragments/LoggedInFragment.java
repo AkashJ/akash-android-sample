@@ -19,10 +19,14 @@ import roboguice.inject.InjectView;
 
 public class LoggedInFragment extends BaseFragment {
 
-    @InjectView(R.id.user_pic)          private ProfilePictureView profilePictureView;
-    @InjectView(R.id.user_name)         private TextView userNameView;
-    @InjectView(R.id.user_location)     private TextView userLocationView;
-    @InjectView(R.id.user_education)    private TextView userEducationView;
+    @InjectView(R.id.user_pic)
+    private ProfilePictureView profilePictureView;
+    @InjectView(R.id.user_name)
+    private TextView userNameView;
+    @InjectView(R.id.user_location)
+    private TextView userLocationView;
+    @InjectView(R.id.user_education)
+    private TextView userEducationView;
 
     private static final String TAG = "LoggedInFragment";
     private static final int REAUTH_ACTIVITY_CODE = 100;
@@ -40,13 +44,13 @@ public class LoggedInFragment extends BaseFragment {
         profilePictureView.setCropped(true);
         Session session = Session.getActiveSession();
         if (session != null && session.isOpened()) {
-            if(savedInstanceState != null && savedInstanceState.containsKey("profileId") && savedInstanceState.containsKey("name") && savedInstanceState.containsKey("location") && savedInstanceState.containsKey("education")){
+            if (savedInstanceState != null && savedInstanceState.containsKey("profileId") && savedInstanceState.containsKey("name") && savedInstanceState.containsKey("location") && savedInstanceState.containsKey("education")) {
                 //If data is available from saved instance then use it and don't make a request
                 userNameView.setText(savedInstanceState.getString("name"));
                 userLocationView.setText(savedInstanceState.getString("location"));
                 userEducationView.setText(savedInstanceState.getString("education"));
                 profilePictureView.setProfileId(savedInstanceState.getString("profileId"));
-            }else{
+            } else {
                 //If data is available from shared preferences then it may be old so display it and then make request to get updated data
                 SharedPreferences settings = getActivity().getSharedPreferences(PREF, 0);
                 userNameView.setText(settings.getString("name", "Loading..."));
@@ -63,7 +67,7 @@ public class LoggedInFragment extends BaseFragment {
         super.onSaveInstanceState(outState);
 
         //Add current profile data to bundle
-        outState.putInt("profileId", profilePictureView.getId());
+        outState.putString("profileId", String.valueOf(profilePictureView.getId()));
         outState.putString("name", userNameView.getText().toString());
         outState.putString("location", userLocationView.getText().toString());
         outState.putString("education", userEducationView.getText().toString());
@@ -71,7 +75,7 @@ public class LoggedInFragment extends BaseFragment {
         //Add the current active fragment index to shared preferences
         SharedPreferences settings = getActivity().getSharedPreferences(PREF, 0);
         SharedPreferences.Editor editor = settings.edit();
-        editor.putInt("profileId", profilePictureView.getId());
+        editor.putString("profileId", String.valueOf(profilePictureView.getId()));
         editor.putString("name", userNameView.getText().toString());
         editor.putString("location", userLocationView.getText().toString());
         editor.putString("education", userEducationView.getText().toString());

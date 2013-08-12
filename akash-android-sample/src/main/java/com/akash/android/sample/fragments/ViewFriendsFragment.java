@@ -10,12 +10,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.*;
 import com.akash.android.sample.R;
 import com.akash.android.sample.base.BaseFragment;
+import com.akash.android.sample.base.BaseObject;
 import com.akash.android.sample.base.BaseRowView;
 import com.akash.android.sample.base.FragmentInterface;
 import com.facebook.*;
@@ -32,6 +30,7 @@ public class ViewFriendsFragment extends BaseFragment {
 
     @InjectView(R.id.friends_list_view)
     ListView friendListView;
+    FriendsListAdapter friendsListAdapter;
     private List<PeopleListElement> friendRows;
 
     private static final String TAG = "ViewFriendsFragment";
@@ -42,7 +41,7 @@ public class ViewFriendsFragment extends BaseFragment {
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.view_friends_fragment, container, false);
         friendRows = new ArrayList<PeopleListElement>();
-        friendRows.add(new PeopleListElement(getActivity().getApplicationContext()));
+        friendRows.add(new PeopleListElement(getActivity().getApplicationContext(), new Friend("Loading...", "", "")));
         return view;
     }
 
@@ -54,36 +53,48 @@ public class ViewFriendsFragment extends BaseFragment {
         header.setText("Friends List");
         int paddingPixel = 5;
         float density = getActivity().getResources().getDisplayMetrics().density;
-        int paddingDp = (int)(paddingPixel * density);
-        header.setPadding(paddingDp,paddingDp,paddingDp,paddingDp);
+        int paddingDp = (int) (paddingPixel * density);
+        header.setPadding(paddingDp, paddingDp, paddingDp, paddingDp);
         header.setTextAppearance(getActivity(), R.style.H1_light);
         friendListView.addHeaderView(header);
-        friendListView.setAdapter(new ActionListAdapter(getActivity(), R.id.friends_list_view, friendRows));
+        friendsListAdapter = new FriendsListAdapter(getActivity(), R.id.friends_list_view, friendRows);
+        friendListView.setAdapter(friendsListAdapter);
         Session session = Session.getActiveSession();
         if (session != null && session.isOpened()) {
-            if(savedInstanceState != null && savedInstanceState.containsKey("friends")){
+            //See if application already has saved friends
+            if (savedInstanceState != null && savedInstanceState.containsKey("friends")) {
+                ArrayList<Friend> savedFriends = (ArrayList<Friend>) savedInstanceState.getSerializable("friends");
                 friendRows.clear();
-                List<PeopleListElement> savedFriends = (List<PeopleListElement>) savedInstanceState.getSerializable("friends");
-                for(PeopleListElement itr: savedFriends){
-                    friendRows.add(itr);
+                for (Friend friend : savedFriends) {
+                    try {
+                        addFriendToList(getActivity().getApplicationContext(), friend);
+                    } catch (JSONException e) {
+                        Log.e("LoggedIn", e.getMessage());
+                    }
                 }
-            }else {
+                friendsListAdapter.notifyDataSetChanged();
+            } else {
+                //if not then retrieve them
                 getFriends(session);
             }
         }
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        //Add current friends data to bundle
-        outState.putSerializable("friends", (ArrayList) friendRows);
-    }
-
-    @Override
     public void onAttach(Activity activityReference) {
         super.onAttach(activityReference);
         this.activityReference = (FragmentInterface) activityReference;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        //Add current friends data to bundle
+        List<Friend> friends = new ArrayList<Friend>(friendRows.size());
+        for (PeopleListElement friendListElement : friendRows) {
+            friends.add(friendListElement.getFriend());
+        }
+        outState.putSerializable("friends", (ArrayList<Friend>) friends);
     }
 
     @Override
@@ -121,15 +132,16 @@ public class ViewFriendsFragment extends BaseFragment {
                                         JSONObject pictureData = ((JSONObject) map.get("picture")).getJSONObject("data");
                                         String location = friend.getLocation() != null ? friend.getLocation().getProperty("name").toString() : "";
                                         String url = (String) pictureData.get("url");
-                                        url = "http"+url.split("https")[1];
-                                        friendRows.add(new PeopleListElement(activity.getApplicationContext(), url, friend.getName(), location, friend));
+                                        url = "http" + url.split("https")[1];
+                                        addFriendToList(activity.getApplicationContext(), new Friend(friend.getName(), location, url));
                                     } catch (JSONException e) {
                                         Log.e("LoggedIn", e.getMessage());
                                     }
                                 }
-                            }else {
-                                friendRows.add(new PeopleListElement(activity.getApplicationContext(), null, "No Friends Found", "", null));
+                            } else {
+                                friendRows.add(new PeopleListElement(activity.getApplicationContext(), null, "No Friends Found", ""));
                             }
+                            friendsListAdapter.notifyDataSetChanged();
                         }
                         if (response.getError() != null) {
                             FacebookRequestError error = response.getError();
@@ -143,14 +155,28 @@ public class ViewFriendsFragment extends BaseFragment {
         friendRequest.executeAsync();
     }
 
+    private void addFriendToList(Context applicationContext, Friend friend) throws JSONException {
+        friendRows.add(new PeopleListElement(applicationContext, friend));
+    }
+
+    private static class Friend extends BaseObject {
+        Friend(String... params) {
+            super(params);
+        }
+    }
+
     private class PeopleListElement extends BaseRowView {
 
-        public PeopleListElement(final Context context) {
-            super(context, null, "Loading", "", null);
+        Friend friend;
+
+        public PeopleListElement(final Context context, Friend friend) {
+            super(context, friend.getImageUrl(), friend.getName(), friend.getLocation());
+            this.friend = friend;
         }
 
-        public PeopleListElement(final Context context, String url, String name, String location, GraphUser user) {
-            super(context, url, name, location, user);
+        public PeopleListElement(final Context context, String url, String name, String location) {
+            super(context, url, name, location);
+            this.friend = new Friend(name, location, url);
         }
 
         @Override
@@ -171,12 +197,16 @@ public class ViewFriendsFragment extends BaseFragment {
                 }
             };
         }
+
+        public Friend getFriend() {
+            return friend;
+        }
     }
 
-    private class ActionListAdapter extends ArrayAdapter<PeopleListElement> {
+    private class FriendsListAdapter extends ArrayAdapter<PeopleListElement> {
         private List<PeopleListElement> listElements;
 
-        public ActionListAdapter(Context context, int resourceId, List<PeopleListElement> peopleListElements) {
+        public FriendsListAdapter(Context context, int resourceId, List<PeopleListElement> peopleListElements) {
             super(context, resourceId, peopleListElements);
             this.listElements = peopleListElements;
             // Set up as an observer for list item changes to

@@ -9,10 +9,9 @@ import android.view.ViewGroup;
 import com.akash.android.sample.R;
 import com.akash.android.sample.base.BaseFragment;
 import com.akash.android.sample.base.FragmentInterface;
-import com.facebook.Session;
-import com.facebook.SessionState;
+import com.facebook.*;
 
-public class ViewPicturesFragment extends BaseFragment{
+public class ViewPicturesFragment extends BaseFragment {
 
     private static final String TAG = "ViewPicturesFragment";
     private static final int REAUTH_ACTIVITY_CODE = 102;
@@ -29,7 +28,7 @@ public class ViewPicturesFragment extends BaseFragment{
     }
 
     @Override
-    public void onAttach(Activity activityReference){
+    public void onAttach(Activity activityReference) {
         super.onAttach(activityReference);
         this.activityReference = (FragmentInterface) activityReference;
     }
@@ -51,6 +50,17 @@ public class ViewPicturesFragment extends BaseFragment{
     }
 
     private void getPictures(final Session session) {
-
+        final Activity activity = getActivity();
+        Bundle requestParams = new Bundle();
+        requestParams.putString("filter", "app_2305272732");
+        requestParams.putString("fields", "from,picture,likes,type");
+        Request picturesFromFeedRequest = new Request(session, "me/home", requestParams, HttpMethod.GET);
+        picturesFromFeedRequest.setCallback(new Request.Callback() {
+            @Override
+            public void onCompleted(Response response) {
+                System.out.println("");
+            }
+        });
+        picturesFromFeedRequest.executeAsync();
     }
 }
