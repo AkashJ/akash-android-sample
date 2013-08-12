@@ -29,8 +29,7 @@ import java.util.Map;
 
 public class ViewFriendsFragment extends BaseFragment {
 
-    @InjectView(R.id.friends_list_view)
-    ListView friendListView;
+    @InjectView(R.id.friends_list_view) ListView friendListView;
     FriendsListAdapter friendsListAdapter;
     private List<PeopleListElement> friendRows;
 
