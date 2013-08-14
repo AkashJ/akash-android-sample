@@ -31,9 +31,6 @@ public class LoggedOutFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         //Set up the permissions on the login button
         Session session = Session.getActiveSession();
-        if (session == null || session.isClosed()) {
-            loginButton.setReadPermissions(Arrays.asList("user_education_history", "user_location", "friends_location", "read_stream"));
-        }
     }
 
 

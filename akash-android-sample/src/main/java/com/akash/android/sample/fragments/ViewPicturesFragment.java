@@ -64,7 +64,7 @@ public class ViewPicturesFragment extends BaseFragment {
 //                    try {
                     addImageToGrid(getActivity().getApplicationContext(), picture);
 //                    } catch (JSONException e) {
-//                        Log.e("LoggedIn", e.getMessage());
+//                        Log.e("GridPicture", e.getMessage());
 //                    }
                 }
                 gridImageAdapter.notifyDataSetChanged();
@@ -121,29 +121,31 @@ public class ViewPicturesFragment extends BaseFragment {
                 if (session == Session.getActiveSession() && activity != null && !activity.isFinishing()) {
                     GraphObject graphObject = response.getGraphObject();
                     try {
-                        JSONArray pictures = graphObject.getInnerJSONObject().getJSONArray("data");
-                        if (pictures.length() > 0) {
-                            for (int i = 0; i < pictures.length(); i++) {
-                                JSONObject picture = pictures.getJSONObject(i);
-                                Integer likeCount = 0;
-                                try {
-                                    JSONObject likes = picture.getJSONObject("likes");
-                                    JSONArray likeArray;
-                                    //TODO - fix this hack
-                                    if (likes != null) {
-                                        likeArray = likes.getJSONArray("data");
-                                        likeCount = likeArray.length();
+                        if (graphObject != null) {
+                            JSONArray pictures = graphObject.getInnerJSONObject().getJSONArray("data");
+                            if (pictures.length() > 0) {
+                                for (int i = 0; i < pictures.length(); i++) {
+                                    JSONObject picture = pictures.getJSONObject(i);
+                                    Integer likeCount = 0;
+                                    try {
+                                        JSONObject likes = picture.getJSONObject("likes");
+                                        JSONArray likeArray;
+                                        //TODO - fix this hack
+                                        if (likes != null) {
+                                            likeArray = likes.getJSONArray("data");
+                                            likeCount = likeArray.length();
+                                        }
+                                    } catch (JSONException e) {
+                                        Log.e("GridPicture", e.getMessage());
+                                        likeCount = 0;
                                     }
-                                } catch (JSONException e) {
-                                    Log.e("LoggedIn", e.getMessage());
-                                    likeCount = 0;
+                                    addImageToGrid(activity.getApplicationContext(), new GridPicture(picture.getString("picture"), likeCount));
                                 }
-                                addImageToGrid(activity.getApplicationContext(), new GridPicture(picture.getString("picture"), likeCount));
                             }
+                            gridImageAdapter.notifyDataSetChanged();
                         }
-                        gridImageAdapter.notifyDataSetChanged();
                     } catch (JSONException e) {
-                        Log.e("LoggedIn", e.getMessage());
+                        Log.e("GridPicture", e.getMessage());
                     }
                 }
             }
