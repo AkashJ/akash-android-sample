@@ -2,6 +2,7 @@ package com.akash.android.sample.fragments;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
@@ -54,7 +56,7 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.check_in_fragment, container, false);
         placeRows = new ArrayList<PlaceListElement>();
-        placeRows.add(new PlaceListElement(getActivity().getApplicationContext(), new Place("Loading...", "", "")));
+        placeRows.add(new PlaceListElement(getActivity().getApplicationContext(), new Place(null, "Loading...", "", "")));
 
         //set up location manager
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
@@ -145,7 +147,7 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
     public void onLocationChanged(Location location) {
         if (location == null) {
             placeRows.clear();
-            placeRows.add(new PlaceListElement(getActivity().getApplicationContext(), null, "Problem getting location", ""));
+            placeRows.add(new PlaceListElement(getActivity().getApplicationContext(), new Place(null, "Problem getting location", "", "")));
             requestStarted = false;
         } else {
             Session session = Session.getActiveSession();
@@ -186,17 +188,17 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
                                 application.setSelectedPlaces(places);
 
                                 //Set the places list
-                                for (GraphPlace place : places) {
+                                for (GraphPlace graphPlace : places) {
                                     try {
-                                        Map<String, Object> map = place.asMap();
+                                        Map<String, Object> map = graphPlace.asMap();
                                         String location = (String) ((JSONObject) map.get("location")).get("street");
-                                        addPlaceToList(activity.getApplicationContext(), new Place((String) map.get("name"), location, null));
+                                        addPlaceToList(activity.getApplicationContext(), new Place(graphPlace, (String) map.get("name"), location, ""));
                                     } catch (JSONException e) {
                                         Log.e("CheckIn", e.getMessage());
                                     }
                                 }
                             } else {
-                                placeRows.add(new PlaceListElement(activity.getApplicationContext(), null, "No Places Found", ""));
+                                placeRows.add(new PlaceListElement(activity.getApplicationContext(), new Place(null, "No Places Found", "", "")));
                                 requestStarted = false;
                             }
                             placeListAdapter.notifyDataSetChanged();
@@ -211,9 +213,18 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
     }
 
     private static class Place extends BaseObject {
-        Place(String... params) {
+
+        GraphPlace graphPlace;
+
+        Place(GraphPlace graphPlace, String... params) {
             super(params);
+            this.graphPlace = graphPlace;
         }
+
+        public GraphPlace getGraphPlace() {
+            return graphPlace;
+        }
+
     }
 
     private class PlaceListElement extends BaseRowView {
@@ -225,57 +236,53 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
             this.place = place;
         }
 
-        public PlaceListElement(final Context context, String url, String name, String location) {
-            super(context, url, name, location);
-            this.place = new Place(name, location, url);
-        }
-
         @Override
         public View.OnClickListener getOnClickListener() {
             return new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                    builder.setCancelable(false);
-                    builder.setTitle("Check In");
-                    builder.setMessage("functionality under construction");
-                    builder.setPositiveButton(getActivity().getString(R.string.ok_text), new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
-                    builder.show();
-//                    GraphPlace place = (GraphPlace) ((BaseRowView) view).getGraphObject();
-//                    if (place != null) {
-//                        final ProgressDialog progressDialog = ProgressDialog.show(getActivity(), "", getActivity().getResources().getString(R.string.progress_dialog), true);
-//
-//                        Bundle params = new Bundle();
-//                        params.putString("place", place.getId());
-//                        params.putString("message", "Testing open graph api check In");
-//                        params.putString("coordinates", place.asMap().get("location").toString());
-//                        final Request request = Request.newPostRequest(Session.getActiveSession(), "me/checkins", place, new Request.Callback() {
-//                            @Override
-//                            public void onCompleted(Response response) {
-//
-//                            }
-//                        });
-//
-//                        AsyncTask<Void, Void, Response> task =
-//                                new AsyncTask<Void, Void, Response>() {
-//                                    @Override
-//                                    protected Response doInBackground(Void... voids) {
-//                                        return request.executeAndWait();
-//                                    }
-//
-//                                    @Override
-//                                    protected void onPostExecute(Response response) {
-//                                        if (progressDialog != null) {
-//                                            progressDialog.dismiss();
-//                                        }
-//                                    }
-//                                };
-//                        task.execute();
-//                    }
+                    GraphPlace place = ((PlaceListElement) view).getPlace().getGraphPlace();
+                    if (place != null) {
+                        final ProgressDialog progressDialog = ProgressDialog.show(getActivity(), "", getActivity().getResources().getString(R.string.progress_dialog), true);
+
+                        Bundle params = new Bundle();
+                        params.putString("place", place.getId());
+                        params.putString("message", "Testing open graph api check In");
+                        final String location = place.asMap().get("location").toString();
+                        params.putString("coordinates", location);
+                        final Request request = Request.newPostRequest(Session.getActiveSession(), "me/checkins", place, new Request.Callback() {
+                            @Override
+                            public void onCompleted(Response response) {
+
+                            }
+                        });
+                        AsyncTask<Void, Void, Response> task =
+                                new AsyncTask<Void, Void, Response>() {
+                                    @Override
+                                    protected Response doInBackground(Void... voids) {
+                                        return request.executeAndWait();
+                                    }
+
+                                    @Override
+                                    protected void onPostExecute(Response response) {
+                                        if (progressDialog != null) {
+                                            progressDialog.dismiss();
+                                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                            builder.setCancelable(false);
+                                            builder.setTitle("Check In");
+                                            builder.setMessage("Successfully checked in at " + location);
+                                            builder.setPositiveButton(getActivity().getString(R.string.ok_text), new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    dialog.dismiss();
+                                                }
+                                            });
+                                            builder.show();
+
+                                        }
+                                    }
+                                };
+                        task.execute();
+                    }
                 }
             };
         }
