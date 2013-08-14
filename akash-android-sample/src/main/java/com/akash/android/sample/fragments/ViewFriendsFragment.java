@@ -6,16 +6,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 import com.akash.android.sample.R;
-import com.akash.android.sample.base.BaseFragment;
-import com.akash.android.sample.base.BaseObject;
-import com.akash.android.sample.base.BaseRowView;
-import com.akash.android.sample.base.FragmentInterface;
+import com.akash.android.sample.base.*;
 import com.facebook.*;
 import com.facebook.model.GraphUser;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -114,12 +112,12 @@ public class ViewFriendsFragment extends BaseFragment {
     }
 
     private void getFriends(final Session session) {
-        final Activity activity = getActivity();
+        final FragmentActivity activity = getActivity();
         Request friendRequest = Request.newMyFriendsRequest(session,
                 new Request.GraphUserListCallback() {
                     @Override
                     public void onCompleted(List<GraphUser> friends, Response response) {
-                        if (session == Session.getActiveSession() && activity != null && !activity.isFinishing() && !activity.isChangingConfigurations()) {
+                        if (session == Session.getActiveSession() && activity != null && !activity.isFinishing()) {
                             friendRows.clear();
                             if (friends != null && friends.size() > 0) {
                                 //save the friends in application

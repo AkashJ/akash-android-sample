@@ -49,7 +49,7 @@ public class HomeActivity extends BaseActivity implements FragmentInterface{
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        if(savedInstanceState.containsKey("currentActiveFragment")){
+        if(savedInstanceState != null && savedInstanceState.containsKey("currentActiveFragment")){
             //Take the last active fragment index from saved instance bundle
             currentActiveFragmentIndex = savedInstanceState.getInt("currentActiveFragment");
         }else {

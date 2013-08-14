@@ -20,12 +20,12 @@ public abstract class BaseGridView extends RelativeLayout{
 
     public BaseGridView(Context context, String imageUrl, Integer likeCount) {
         super(context);
-        inflate(context, R.layout.base_row_view, this);
+        inflate(context, R.layout.base_grid_view, this);
         this.imageView = (ImageView) findViewById(R.id.image);
-        this.likesCountView = (TextView) findViewById(R.id.name);
+        this.likesCountView = (TextView) findViewById(R.id.like_count);
         this.imageUrl = imageUrl;
         imageLoader.displayImage(imageUrl, this.imageView);
-        this.likesCountView.setText(likeCount);
+        this.likesCountView.setText(likeCount != null ? String.valueOf(likeCount) : String.valueOf(0));
     }
 
     public void setAdapter(BaseAdapter adapter) {

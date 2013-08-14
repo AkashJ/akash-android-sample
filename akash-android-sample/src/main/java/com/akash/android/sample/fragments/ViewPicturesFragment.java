@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +17,9 @@ import com.akash.android.sample.base.*;
 import com.facebook.*;
 import com.facebook.model.GraphObject;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import roboguice.inject.InjectView;
 
 import java.util.ArrayList;
@@ -24,7 +27,8 @@ import java.util.List;
 
 public class ViewPicturesFragment extends BaseFragment {
 
-    @InjectView(R.id.pictures_grid_view) GridView gridView;
+    @InjectView(R.id.pictures_grid_view)
+    GridView gridView;
 
     private static final String TAG = "ViewPicturesFragment";
     private static final int REAUTH_ACTIVITY_CODE = 102;
@@ -58,7 +62,7 @@ public class ViewPicturesFragment extends BaseFragment {
                 gridElements.clear();
                 for (GridPicture picture : savedFriends) {
 //                    try {
-                        addImageToGrid(getActivity().getApplicationContext(), picture);
+                    addImageToGrid(getActivity().getApplicationContext(), picture);
 //                    } catch (JSONException e) {
 //                        Log.e("LoggedIn", e.getMessage());
 //                    }
@@ -105,7 +109,7 @@ public class ViewPicturesFragment extends BaseFragment {
     }
 
     private void getPictures(final Session session) {
-        final Activity activity = getActivity();
+        final FragmentActivity activity = getActivity();
         Bundle requestParams = new Bundle();
         requestParams.putString("filter", "app_2305272732");
         requestParams.putString("fields", "from,picture,likes,type");
@@ -113,9 +117,35 @@ public class ViewPicturesFragment extends BaseFragment {
         picturesFromFeedRequest.setCallback(new Request.Callback() {
             @Override
             public void onCompleted(Response response) {
-                System.out.println("");
-                GraphObject graphObject = response.getGraphObject();
-                //TODO - populate the grid view
+                final FragmentActivity activity = getActivity();
+                if (session == Session.getActiveSession() && activity != null && !activity.isFinishing()) {
+                    GraphObject graphObject = response.getGraphObject();
+                    try {
+                        JSONArray pictures = graphObject.getInnerJSONObject().getJSONArray("data");
+                        if (pictures.length() > 0) {
+                            for (int i = 0; i < pictures.length(); i++) {
+                                JSONObject picture = pictures.getJSONObject(i);
+                                Integer likeCount = 0;
+                                try {
+                                    JSONObject likes = picture.getJSONObject("likes");
+                                    JSONArray likeArray;
+                                    //TODO - fix this hack
+                                    if (likes != null) {
+                                        likeArray = likes.getJSONArray("data");
+                                        likeCount = likeArray.length();
+                                    }
+                                } catch (JSONException e) {
+                                    Log.e("LoggedIn", e.getMessage());
+                                    likeCount = 0;
+                                }
+                                addImageToGrid(activity.getApplicationContext(), new GridPicture(picture.getString("picture"), likeCount));
+                            }
+                        }
+                        gridImageAdapter.notifyDataSetChanged();
+                    } catch (JSONException e) {
+                        Log.e("LoggedIn", e.getMessage());
+                    }
+                }
             }
         });
         picturesFromFeedRequest.executeAsync();

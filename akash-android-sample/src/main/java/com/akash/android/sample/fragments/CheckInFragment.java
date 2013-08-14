@@ -10,6 +10,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -173,12 +174,12 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
 
 
     private void getPlaces(final Session session, final Location location) {
-        final Activity activity = getActivity();
+        final FragmentActivity activity = getActivity();
         Request placeRequest = Request.newPlacesSearchRequest(session, location, RADIUS_IN_METERS, RESULTS_LIMIT, "",
                 new Request.GraphPlaceListCallback() {
                     @Override
                     public void onCompleted(List<GraphPlace> places, Response response) {
-                        if (session == Session.getActiveSession() && activity != null && !activity.isFinishing() && !activity.isChangingConfigurations()) {
+                        if (session == Session.getActiveSession() && activity != null && !activity.isFinishing()) {
                             placeRows.clear();
                             if (places != null && places.size() > 0) {
                                 //save the places in application
