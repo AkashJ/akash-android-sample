@@ -18,6 +18,8 @@
     <string name="under_construction">Under Construction</string>
     <string name="progress_dialog">Loading…</string>
     <string name="ok_text">OK</string>
+    <string name="yes_text">Yes</string>
+    <string name="no_text">No</string>
     <string name="like_text">Likes:</string>
 
 </resources>

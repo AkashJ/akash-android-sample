@@ -127,6 +127,7 @@ public class LoggedInFragment extends BaseFragment {
                                         userEducationView.setText("Education not available.");
                                     }
                                 } catch (JSONException e) {
+                                    userEducationView.setText("Education not available.");
                                     Log.e("LoggedIn", e.getMessage());
                                 }
                             }

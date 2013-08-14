@@ -241,48 +241,73 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
             return new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    GraphPlace place = ((PlaceListElement) view).getPlace().getGraphPlace();
-                    if (place != null) {
-                        final ProgressDialog progressDialog = ProgressDialog.show(getActivity(), "", getActivity().getResources().getString(R.string.progress_dialog), true);
 
-                        Bundle params = new Bundle();
-                        params.putString("place", place.getId());
-                        params.putString("message", "Testing open graph api check In");
-                        final String location = place.asMap().get("location").toString();
-                        params.putString("coordinates", location);
-                        final Request request = Request.newPostRequest(Session.getActiveSession(), "me/checkins", place, new Request.Callback() {
-                            @Override
-                            public void onCompleted(Response response) {
+                    final Place viewPlace = (Place) view.getTag();
 
-                            }
-                        });
-                        AsyncTask<Void, Void, Response> task =
-                                new AsyncTask<Void, Void, Response>() {
-                                    @Override
-                                    protected Response doInBackground(Void... voids) {
-                                        return request.executeAndWait();
-                                    }
-
-                                    @Override
-                                    protected void onPostExecute(Response response) {
-                                        if (progressDialog != null) {
-                                            progressDialog.dismiss();
-                                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                                            builder.setCancelable(false);
-                                            builder.setTitle("Check In");
-                                            builder.setMessage("Successfully checked in at " + location);
-                                            builder.setPositiveButton(getActivity().getString(R.string.ok_text), new DialogInterface.OnClickListener() {
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                    dialog.dismiss();
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setCancelable(false);
+                    builder.setTitle("Check In");
+                    builder.setMessage("Do you want to check in at " + viewPlace.getName());
+                    builder.setPositiveButton(getActivity().getString(R.string.yes_text), new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            final ProgressDialog progressDialog = ProgressDialog.show(getActivity(), "", getActivity().getResources().getString(R.string.progress_dialog), true);
+                            try {
+                                GraphPlace place = viewPlace.getGraphPlace();
+                                if (place != null) {
+                                    Bundle params = new Bundle();
+                                    params.putString("place", place.getId());
+                                    params.putString("message", "Testing open graph api check In");
+                                    final Request request = Request.newPostRequest(Session.getActiveSession(), "feed", place, new Request.Callback() {
+                                        @Override
+                                        public void onCompleted(Response response) {
+                                            if (response.getError() != null) {
+                                                progressDialog.dismiss();
+                                                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                                builder.setCancelable(true);
+                                                builder.setTitle("Check In");
+                                                builder.setMessage("Problem occurred while trying to check in. error message: "+response.getError().getErrorMessage());
+                                                builder.show();
+                                            } else {
+                                                if (progressDialog != null) {
+                                                    progressDialog.dismiss();
+                                                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                                    builder.setCancelable(false);
+                                                    builder.setTitle("Check In");
+                                                    builder.setMessage("Successfully checked in at " + viewPlace.getName());
+                                                    builder.setPositiveButton(getActivity().getString(R.string.ok_text), new DialogInterface.OnClickListener() {
+                                                        public void onClick(DialogInterface dialog, int which) {
+                                                            dialog.dismiss();
+                                                        }
+                                                    });
+                                                    builder.show();
                                                 }
-                                            });
-                                            builder.show();
-
+                                            }
                                         }
-                                    }
-                                };
-                        task.execute();
-                    }
+                                    });
+                                    request.setParameters(params);
+                                    request.executeAsync();
+                                }
+                            } catch (Exception e) {
+                                progressDialog.dismiss();
+                                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                builder.setCancelable(true);
+                                builder.setTitle("Check In");
+                                builder.setMessage("Problem occurred while trying to check in. error message: "+e.getMessage());
+                                builder.show();
+                            }
+                        }
+                    });
+                    builder.setNegativeButton(getActivity().getString(R.string.no_text), new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+                    builder.show();
+
+
                 }
             };
         }
@@ -320,6 +345,10 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
                 ImageView image = (ImageView) view.findViewById(R.id.image);
                 TextView name = (TextView) view.findViewById(R.id.name);
                 TextView location = (TextView) view.findViewById(R.id.location);
+                Place place = placeListElement.getPlace();
+                if (place != null) {
+                    view.setTag(place);
+                }
                 if (image != null) {
                     imageLoader.displayImage("", image);
                     if (placeListElement.getImageUrl() != null && placeListElement.getImageUrl().length() > 0) {
