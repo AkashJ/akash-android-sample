@@ -6,20 +6,17 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.*;
 import com.akash.android.sample.R;
-import com.akash.android.sample.base.BaseFragment;
-import com.akash.android.sample.base.BaseRowView;
-import com.akash.android.sample.base.FragmentInterface;
+import com.akash.android.sample.base.*;
 import com.facebook.*;
 import com.facebook.model.GraphUser;
+import com.nostra13.universalimageloader.core.ImageLoader;
 import org.json.JSONException;
 import org.json.JSONObject;
 import roboguice.inject.InjectView;
@@ -30,8 +27,8 @@ import java.util.Map;
 
 public class ViewFriendsFragment extends BaseFragment {
 
-    @InjectView(R.id.friends_list_view)
-    ListView friendListView;
+    @InjectView(R.id.friends_list_view) ListView friendListView;
+    FriendsListAdapter friendsListAdapter;
     private List<PeopleListElement> friendRows;
 
     private static final String TAG = "ViewFriendsFragment";
@@ -42,24 +39,60 @@ public class ViewFriendsFragment extends BaseFragment {
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.view_friends_fragment, container, false);
         friendRows = new ArrayList<PeopleListElement>();
-        friendRows.add(new PeopleListElement(getActivity().getApplicationContext()));
-        Session session = Session.getActiveSession();
-        if (session != null && session.isOpened()) {
-            getFriends(session);
-        }
+        friendRows.add(new PeopleListElement(getActivity().getApplicationContext(), new Friend("Loading...", "", "")));
         return view;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        friendListView.setAdapter(new ActionListAdapter(getActivity(), R.id.friends_list_view, friendRows));
+        TextView header = new TextView(getActivity());
+        header.setText("Friends List");
+        int paddingPixel = 5;
+        float density = getActivity().getResources().getDisplayMetrics().density;
+        int paddingDp = (int) (paddingPixel * density);
+        header.setPadding(paddingDp, paddingDp, paddingDp, paddingDp);
+        header.setTextAppearance(getActivity(), R.style.H1_light);
+        friendListView.addHeaderView(header);
+        friendsListAdapter = new FriendsListAdapter(getActivity(), R.id.friends_list_view, friendRows);
+        friendListView.setAdapter(friendsListAdapter);
+        Session session = Session.getActiveSession();
+        if (session != null && session.isOpened()) {
+            //See if application already has saved friends
+            if (savedInstanceState != null && savedInstanceState.containsKey("friends")) {
+                ArrayList<Friend> savedFriends = (ArrayList<Friend>) savedInstanceState.getSerializable("friends");
+                friendRows.clear();
+                for (Friend friend : savedFriends) {
+                    try {
+                        addFriendToList(getActivity().getApplicationContext(), friend);
+                    } catch (JSONException e) {
+                        Log.e("LoggedIn", e.getMessage());
+                    }
+                }
+                friendsListAdapter.notifyDataSetChanged();
+            } else {
+                //if not then retrieve them
+                getFriends(session);
+            }
+        }
     }
 
     @Override
     public void onAttach(Activity activityReference) {
         super.onAttach(activityReference);
         this.activityReference = (FragmentInterface) activityReference;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        //Add current friends data to bundle
+        List<Friend> friends = new ArrayList<Friend>(friendRows.size());
+        for (PeopleListElement friendListElement : friendRows) {
+            friends.add(friendListElement.getFriend());
+        }
+        outState.putSerializable("friends", (ArrayList<Friend>) friends);
     }
 
     @Override
@@ -79,12 +112,12 @@ public class ViewFriendsFragment extends BaseFragment {
     }
 
     private void getFriends(final Session session) {
-        final Activity activity = getActivity();
+        final FragmentActivity activity = getActivity();
         Request friendRequest = Request.newMyFriendsRequest(session,
                 new Request.GraphUserListCallback() {
                     @Override
                     public void onCompleted(List<GraphUser> friends, Response response) {
-                        if (session == Session.getActiveSession() && activity != null && !activity.isFinishing() && !activity.isChangingConfigurations()) {
+                        if (session == Session.getActiveSession() && activity != null && !activity.isFinishing()) {
                             friendRows.clear();
                             if (friends != null && friends.size() > 0) {
                                 //save the friends in application
@@ -97,15 +130,16 @@ public class ViewFriendsFragment extends BaseFragment {
                                         JSONObject pictureData = ((JSONObject) map.get("picture")).getJSONObject("data");
                                         String location = friend.getLocation() != null ? friend.getLocation().getProperty("name").toString() : "";
                                         String url = (String) pictureData.get("url");
-                                        url = "http"+url.split("https")[1];
-                                        friendRows.add(new PeopleListElement(activity.getApplicationContext(), url, friend.getName(), location, friend));
+                                        url = "http" + url.split("https")[1];
+                                        addFriendToList(activity.getApplicationContext(), new Friend(friend.getName(), location, url));
                                     } catch (JSONException e) {
                                         Log.e("LoggedIn", e.getMessage());
                                     }
                                 }
-                            }else {
-                                friendRows.add(new PeopleListElement(activity.getApplicationContext(), null, "No Friends Found", "", null));
+                            } else {
+                                friendRows.add(new PeopleListElement(activity.getApplicationContext(), null, "No Friends Found", ""));
                             }
+                            friendsListAdapter.notifyDataSetChanged();
                         }
                         if (response.getError() != null) {
                             FacebookRequestError error = response.getError();
@@ -119,14 +153,28 @@ public class ViewFriendsFragment extends BaseFragment {
         friendRequest.executeAsync();
     }
 
+    private void addFriendToList(Context applicationContext, Friend friend) throws JSONException {
+        friendRows.add(new PeopleListElement(applicationContext, friend));
+    }
+
+    private static class Friend extends BaseObject {
+        Friend(String... params) {
+            super(params);
+        }
+    }
+
     private class PeopleListElement extends BaseRowView {
 
-        public PeopleListElement(final Context context) {
-            super(context, null, "Loading", "", null);
+        Friend friend;
+
+        public PeopleListElement(final Context context, Friend friend) {
+            super(context, friend.getImageUrl(), friend.getName(), friend.getLocation());
+            this.friend = friend;
         }
 
-        public PeopleListElement(final Context context, String url, String name, String location, GraphUser user) {
-            super(context, url, name, location, user);
+        public PeopleListElement(final Context context, String url, String name, String location) {
+            super(context, url, name, location);
+            this.friend = new Friend(name, location, url);
         }
 
         @Override
@@ -147,12 +195,17 @@ public class ViewFriendsFragment extends BaseFragment {
                 }
             };
         }
+
+        public Friend getFriend() {
+            return friend;
+        }
     }
 
-    private class ActionListAdapter extends ArrayAdapter<PeopleListElement> {
+    private class FriendsListAdapter extends ArrayAdapter<PeopleListElement> {
         private List<PeopleListElement> listElements;
+        protected ImageLoader imageLoader = ImageLoader.getInstance();
 
-        public ActionListAdapter(Context context, int resourceId, List<PeopleListElement> peopleListElements) {
+        public FriendsListAdapter(Context context, int resourceId, List<PeopleListElement> peopleListElements) {
             super(context, resourceId, peopleListElements);
             this.listElements = peopleListElements;
             // Set up as an observer for list item changes to
@@ -177,7 +230,14 @@ public class ViewFriendsFragment extends BaseFragment {
                 TextView name = (TextView) view.findViewById(R.id.name);
                 TextView location = (TextView) view.findViewById(R.id.location);
                 if (image != null) {
-                    image = peopleListElement.getPicture();
+                    imageLoader.displayImage("", image);
+                    if (peopleListElement.getImageUrl() != null && peopleListElement.getImageUrl().length() > 0) {
+                        imageLoader.displayImage(peopleListElement.getImageUrl(), image);
+                        image.setVisibility(View.VISIBLE);
+                    } else {
+                        image.setVisibility(View.GONE);
+                        image.invalidate();
+                    }
                 }
                 if (name != null) {
                     name.setText(peopleListElement.getName());

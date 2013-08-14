@@ -7,30 +7,27 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.akash.android.sample.R;
-import com.facebook.model.GraphObject;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
-public abstract class BaseRowView extends RelativeLayout{
+public abstract class BaseRowView extends RelativeLayout {
 
     private ImageView picture;
+    private String imageUrl;
     private TextView name;
     private TextView location;
     private BaseAdapter adapter;
-    private GraphObject object;
+    protected static ImageLoader imageLoader = ImageLoader.getInstance();
 
-    public BaseRowView(final Context context, String url, String name, String location, GraphObject object) {
+    public BaseRowView(final Context context, String url, String name, String location) {
         super(context);
         inflate(context, R.layout.base_row_view, this);
         this.picture = (ImageView) findViewById(R.id.image);
         this.name = (TextView) findViewById(R.id.name);
         this.location = (TextView) findViewById(R.id.location);
-
-        ImageLoader imageLoader = ImageLoader.getInstance();
-
+        this.imageUrl = url;
         imageLoader.displayImage(url, this.picture);
         this.name.setText(name);
         this.location.setText(location);
-        this.object = object;
     }
 
     public abstract View.OnClickListener getOnClickListener();
@@ -70,11 +67,11 @@ public abstract class BaseRowView extends RelativeLayout{
         this.location.setText(location);
     }
 
-    public GraphObject getGraphObject() {
-        return object;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public void setGraphObject(GraphObject object) {
-        this.object = object;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

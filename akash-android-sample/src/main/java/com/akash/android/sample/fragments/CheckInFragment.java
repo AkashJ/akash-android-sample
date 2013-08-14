@@ -10,6 +10,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,13 +18,16 @@ import android.view.ViewGroup;
 import android.widget.*;
 import com.akash.android.sample.R;
 import com.akash.android.sample.base.BaseFragment;
+import com.akash.android.sample.base.BaseObject;
 import com.akash.android.sample.base.BaseRowView;
 import com.akash.android.sample.base.FragmentInterface;
 import com.facebook.*;
 import com.facebook.model.GraphPlace;
+import com.nostra13.universalimageloader.core.ImageLoader;
 import org.json.JSONException;
 import org.json.JSONObject;
 import roboguice.inject.InjectView;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,11 +38,12 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
     private static final int REAUTH_ACTIVITY_CODE = 103;
     private static final int RADIUS_IN_METERS = 600;
     private static final int RESULTS_LIMIT = 15;
-    private static final int MIN_TIME = 120000;
-    private static final int MIN_DISTANCE = 1;
+    private static final int MIN_TIME = 60000;
+    private static final int MIN_DISTANCE = 0;
 
     @InjectView(R.id.check_in_list_view)
     ListView checkInListView;
+    PlaceListAdapter placeListAdapter;
     private List<PlaceListElement> placeRows;
     private LocationManager locationManager;
     private String provider;
@@ -49,18 +54,47 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.check_in_fragment, container, false);
         placeRows = new ArrayList<PlaceListElement>();
-        placeRows.add(new PlaceListElement(getActivity().getApplicationContext()));
+        placeRows.add(new PlaceListElement(getActivity().getApplicationContext(), new Place("Loading...", "", "")));
 
         //set up location manager
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        provider = locationManager.getBestProvider(new Criteria(), false);
+        Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        provider = locationManager.getBestProvider(criteria, false);
+        onLocationChanged(locationManager.getLastKnownLocation(provider));
         return view;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        checkInListView.setAdapter(new CustomListAdapter(getActivity(), R.id.friends_list_view, placeRows));
+        TextView header = new TextView(getActivity());
+        header.setText("Places NearBy");
+        int paddingPixel = 5;
+        float density = getActivity().getResources().getDisplayMetrics().density;
+        int paddingDp = (int) (paddingPixel * density);
+        header.setPadding(paddingDp, paddingDp, paddingDp, paddingDp);
+        header.setTextAppearance(getActivity(), R.style.H1_light);
+        checkInListView.addHeaderView(header);
+        placeListAdapter = new PlaceListAdapter(getActivity(), R.id.check_in_list_view, placeRows);
+        checkInListView.setAdapter(placeListAdapter);
+        Session session = Session.getActiveSession();
+        if (session != null && session.isOpened()) {
+            //See if savedInstance already has saved places
+            if (savedInstanceState != null && savedInstanceState.containsKey("places")) {
+                ArrayList<Place> savedPlaces = (ArrayList<Place>) savedInstanceState.getSerializable("places");
+                placeRows.clear();
+                for (Place place : savedPlaces) {
+                    try {
+                        addPlaceToList(getActivity().getApplicationContext(), place);
+                    } catch (JSONException e) {
+                        Log.e("LoggedIn", e.getMessage());
+                    }
+                }
+                placeListAdapter.notifyDataSetChanged();
+            }
+        }
     }
 
     @Override
@@ -89,6 +123,18 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        //Add current places data to bundle
+        List<Place> places = new ArrayList<Place>(placeRows.size());
+        for (PlaceListElement placeListElement : placeRows) {
+            places.add(placeListElement.getPlace());
+        }
+        outState.putSerializable("places", (ArrayList<Place>) places);
+    }
+
+
+    @Override
     public void onPause() {
         super.onPause();
         locationManager.removeUpdates(this);
@@ -97,11 +143,17 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        Session session = Session.getActiveSession();
-        if (session != null && session.isOpened() && location != null && !requestStarted) {
-            // Get/Update places.
-            requestStarted = true;
-            getPlaces(session, location);
+        if (location == null) {
+            placeRows.clear();
+            placeRows.add(new PlaceListElement(getActivity().getApplicationContext(), null, "Problem getting location", ""));
+            requestStarted = false;
+        } else {
+            Session session = Session.getActiveSession();
+            if (session != null && session.isOpened() && !requestStarted) {
+                // Get/Update places.
+                requestStarted = true;
+                getPlaces(session, location);
+            }
         }
     }
 
@@ -122,15 +174,15 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
 
 
     private void getPlaces(final Session session, final Location location) {
-        final Activity activity = getActivity();
+        final FragmentActivity activity = getActivity();
         Request placeRequest = Request.newPlacesSearchRequest(session, location, RADIUS_IN_METERS, RESULTS_LIMIT, "",
                 new Request.GraphPlaceListCallback() {
                     @Override
                     public void onCompleted(List<GraphPlace> places, Response response) {
-                        if (session == Session.getActiveSession() && activity != null && !activity.isFinishing() && !activity.isChangingConfigurations()) {
+                        if (session == Session.getActiveSession() && activity != null && !activity.isFinishing()) {
                             placeRows.clear();
                             if (places != null && places.size() > 0) {
-                                //save the friends in application
+                                //save the places in application
                                 application.setSelectedPlaces(places);
 
                                 //Set the places list
@@ -138,31 +190,44 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
                                     try {
                                         Map<String, Object> map = place.asMap();
                                         String location = (String) ((JSONObject) map.get("location")).get("street");
-                                        placeRows.add(new PlaceListElement(activity.getApplicationContext(), null, (String) map.get("name"), location, place));
+                                        addPlaceToList(activity.getApplicationContext(), new Place((String) map.get("name"), location, null));
                                     } catch (JSONException e) {
                                         Log.e("LoggedIn", e.getMessage());
                                     }
                                 }
                             } else {
-                                placeRows.add(new PlaceListElement(activity.getApplicationContext(), null, "No Places Found", "", null));
+                                placeRows.add(new PlaceListElement(activity.getApplicationContext(), null, "No Places Found", ""));
                                 requestStarted = false;
                             }
-
-
+                            placeListAdapter.notifyDataSetChanged();
                         }
                     }
                 });
         placeRequest.executeAsync();
     }
 
+    private void addPlaceToList(Context applicationContext, Place place) throws JSONException {
+        placeRows.add(new PlaceListElement(applicationContext, place));
+    }
+
+    private static class Place extends BaseObject {
+        Place(String... params) {
+            super(params);
+        }
+    }
+
     private class PlaceListElement extends BaseRowView {
 
-        public PlaceListElement(final Context context) {
-            super(context, null, "Loading", "", null);
+        private Place place;
+
+        public PlaceListElement(final Context context, Place place) {
+            super(context, place.getImageUrl(), place.getName(), place.getLocation());
+            this.place = place;
         }
 
-        public PlaceListElement(final Context context, String url, String name, String location, GraphPlace place) {
-            super(context, url, name, location, place);
+        public PlaceListElement(final Context context, String url, String name, String location) {
+            super(context, url, name, location);
+            this.place = new Place(name, location, url);
         }
 
         @Override
@@ -214,12 +279,17 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
                 }
             };
         }
+
+        public Place getPlace() {
+            return place;
+        }
     }
 
-    private class CustomListAdapter extends ArrayAdapter<PlaceListElement> {
+    private class PlaceListAdapter extends ArrayAdapter<PlaceListElement> {
         private List<PlaceListElement> listElements;
+        protected ImageLoader imageLoader = ImageLoader.getInstance();
 
-        public CustomListAdapter(Context context, int resourceId, List<PlaceListElement> placeListElements) {
+        public PlaceListAdapter(Context context, int resourceId, List<PlaceListElement> placeListElements) {
             super(context, resourceId, placeListElements);
             this.listElements = placeListElements;
             // Set up as an observer for list item changes to
@@ -244,7 +314,14 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
                 TextView name = (TextView) view.findViewById(R.id.name);
                 TextView location = (TextView) view.findViewById(R.id.location);
                 if (image != null) {
-                    image = placeListElement.getPicture();
+                    imageLoader.displayImage("", image);
+                    if (placeListElement.getImageUrl() != null && placeListElement.getImageUrl().length() > 0) {
+                        imageLoader.displayImage(placeListElement.getImageUrl(), image);
+                        image.setVisibility(View.VISIBLE);
+                    } else {
+                        image.setVisibility(View.GONE);
+                        image.invalidate();
+                    }
                 }
                 if (name != null) {
                     name.setText(placeListElement.getName());
