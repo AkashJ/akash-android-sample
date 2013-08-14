@@ -89,7 +89,7 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
                     try {
                         addPlaceToList(getActivity().getApplicationContext(), place);
                     } catch (JSONException e) {
-                        Log.e("LoggedIn", e.getMessage());
+                        Log.e("CheckIn", e.getMessage());
                     }
                 }
                 placeListAdapter.notifyDataSetChanged();
@@ -192,7 +192,7 @@ public class CheckInFragment extends BaseFragment implements LocationListener {
                                         String location = (String) ((JSONObject) map.get("location")).get("street");
                                         addPlaceToList(activity.getApplicationContext(), new Place((String) map.get("name"), location, null));
                                     } catch (JSONException e) {
-                                        Log.e("LoggedIn", e.getMessage());
+                                        Log.e("CheckIn", e.getMessage());
                                     }
                                 }
                             } else {

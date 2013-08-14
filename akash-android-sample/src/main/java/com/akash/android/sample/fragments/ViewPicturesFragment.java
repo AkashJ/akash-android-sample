@@ -64,7 +64,7 @@ public class ViewPicturesFragment extends BaseFragment {
 //                    try {
                     addImageToGrid(getActivity().getApplicationContext(), picture);
 //                    } catch (JSONException e) {
-//                        Log.e("LoggedIn", e.getMessage());
+//                        Log.e("GridPicture", e.getMessage());
 //                    }
                 }
                 gridImageAdapter.notifyDataSetChanged();
@@ -135,7 +135,7 @@ public class ViewPicturesFragment extends BaseFragment {
                                         likeCount = likeArray.length();
                                     }
                                 } catch (JSONException e) {
-                                    Log.e("LoggedIn", e.getMessage());
+                                    Log.e("GridPicture", e.getMessage());
                                     likeCount = 0;
                                 }
                                 addImageToGrid(activity.getApplicationContext(), new GridPicture(picture.getString("picture"), likeCount));
@@ -143,7 +143,7 @@ public class ViewPicturesFragment extends BaseFragment {
                         }
                         gridImageAdapter.notifyDataSetChanged();
                     } catch (JSONException e) {
-                        Log.e("LoggedIn", e.getMessage());
+                        Log.e("GridPicture", e.getMessage());
                     }
                 }
             }

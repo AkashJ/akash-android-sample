@@ -67,7 +67,7 @@ public class ViewFriendsFragment extends BaseFragment {
                     try {
                         addFriendToList(getActivity().getApplicationContext(), friend);
                     } catch (JSONException e) {
-                        Log.e("LoggedIn", e.getMessage());
+                        Log.e("FriendsList", e.getMessage());
                     }
                 }
                 friendsListAdapter.notifyDataSetChanged();
@@ -133,7 +133,7 @@ public class ViewFriendsFragment extends BaseFragment {
                                         url = "http" + url.split("https")[1];
                                         addFriendToList(activity.getApplicationContext(), new Friend(friend.getName(), location, url));
                                     } catch (JSONException e) {
-                                        Log.e("LoggedIn", e.getMessage());
+                                        Log.e("FriendsList", e.getMessage());
                                     }
                                 }
                             } else {
