@@ -27,7 +27,8 @@ import java.util.Map;
 
 public class ViewFriendsFragment extends BaseFragment {
 
-    @InjectView(R.id.friends_list_view) ListView friendListView;
+    @InjectView(R.id.friends_list_view)
+    ListView friendListView;
     FriendsListAdapter friendsListAdapter;
     private List<PeopleListElement> friendRows;
 
@@ -182,16 +183,18 @@ public class ViewFriendsFragment extends BaseFragment {
             return new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                    builder.setCancelable(false);
-                    builder.setTitle("Friend Details View");
-                    builder.setMessage("functionality under construction");
-                    builder.setPositiveButton(getActivity().getString(R.string.ok_text), new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
-                    builder.show();
+                    if (view.getTag() != null) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                        builder.setCancelable(false);
+                        builder.setTitle("Friend Details View");
+                        builder.setMessage("functionality under construction");
+                        builder.setPositiveButton(getActivity().getString(R.string.ok_text), new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                        builder.show();
+                    }
                 }
             };
         }
@@ -225,6 +228,8 @@ public class ViewFriendsFragment extends BaseFragment {
 
             PeopleListElement peopleListElement = listElements.get(position);
             if (peopleListElement != null) {
+                Friend friend = peopleListElement.getFriend();
+                view.setTag(friend);
                 view.setOnClickListener(peopleListElement.getOnClickListener());
                 ImageView image = (ImageView) view.findViewById(R.id.image);
                 TextView name = (TextView) view.findViewById(R.id.name);

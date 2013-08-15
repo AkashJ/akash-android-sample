@@ -182,16 +182,18 @@ public class ViewPicturesFragment extends BaseFragment {
             return new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                    builder.setCancelable(false);
-                    builder.setTitle("Grid Picture View");
-                    builder.setMessage("functionality under construction");
-                    builder.setPositiveButton(getActivity().getString(R.string.ok_text), new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
-                    builder.show();
+                    if(view.getTag() != null){
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                        builder.setCancelable(false);
+                        builder.setTitle("Grid Picture View");
+                        builder.setMessage("functionality under construction");
+                        builder.setPositiveButton(getActivity().getString(R.string.ok_text), new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                        builder.show();
+                    }
                 }
             };
         }
@@ -226,6 +228,8 @@ public class ViewPicturesFragment extends BaseFragment {
 
             GridPictureElement gridPictureElement = listElements.get(position);
             if (gridPictureElement != null) {
+                GridPicture gridPicture = gridPictureElement.getGridPicture();
+                view.setTag(gridPicture);
                 view.setOnClickListener(gridPictureElement.getOnClickListener());
                 ImageView image = (ImageView) view.findViewById(R.id.image);
                 TextView likeCount = (TextView) view.findViewById(R.id.like_count);
